@@ -1,68 +1,60 @@
-//simulate a game of craps
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
 
-void seed_rng(void){
-    srand((unsigned)time(NULL));
-}
-
 int roll_dice(void){
     int n1 = rand() % 6 + 1;
     int n2 = rand() % 6 + 1;
-    printf("You rolled %d\n", n1 + n2);
+    printf("You rolled %d\n", n1+n2);
     return n1 + n2;
-}
-
-bool subsequent_roll(int point){
-    int n = roll_dice();
-    if(n == point){
-        return true;
-    }
-    else if (n==7){
-        return false;
-    }
-    else return subsequent_roll(point);
-
 }
 
 bool play_game(void){
     int n = roll_dice();
-    if (n == 7 || n == 11){
-        return true; //player wins
+    if(n == 7 || n == 11){
+        printf("You win!\n");
+        return true;
     }
-    else if (n == 2 || n == 3 || n == 12){
-        return false; //player loses
+    else if(n == 2 || n == 3 || n == 12){
+        printf("You lose!\n");
+        return false;
     }
-    else {
+    else{
         printf("Your point is %d\n", n);
-        return subsequent_roll(n);
+        while(true){
+            int n2 = roll_dice();
+            if(n2 == n){
+                printf("You win!\n");
+                return true;
+            }
+            else if(n2 == 7){
+                printf("You lose!\n");
+                return false;
+            }
+        }
     }
 }
 
 int main(){
-    int win = 0; int loss = 0;
-    int ch;
-    seed_rng();
+    srand(time(NULL));
+    int wins = 0, losses = 0;
     for(;;){
-        if(play_game()){
-          printf("You win!\n");
-          win++;  
+        printf("Do you want to play a game of craps? (y/n) ");
+        char c = getchar();
+        while(getchar() != '\n');
+        if(c == 'y' || c == 'Y'){
+            if(play_game()){
+                wins++;
+            }
+            else{
+                losses++;
+            }
         }
-        else {
-            printf("You lose\n");
-            loss++;
-        }
-        printf("Play again?");
-        scanf("%d", &ch);
-        if(ch == 'n' || ch == 'N')  {
-            printf("Wins: %d Losses: %d", win, loss);
+        else if(c == 'n' || c == 'N'){
             break;
         }
-        else continue;
     }
-    
+    printf("Wins: %d, Losses: %d\n", wins, losses);
     return 0;
 }
