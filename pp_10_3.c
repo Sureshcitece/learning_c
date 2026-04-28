@@ -1,62 +1,150 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define NUM_RANKS 13
 #define NUM_SUITS 4
 #define NUM_CARDS 5
+#define RANK 0
+#define SUIT 1
 
 bool flush, straight, four, three;
 int pair = 0;
-char hand[NUM_CARDS][2];
+int hand[NUM_CARDS][2];
 
-void read_card(){
-    int num_read = 0;
-    bool bad_card = false;
-    char rank, suit, ch;
-    while (num_read < NUM_CARDS){
-        printf("Enter card:");
-        rank = getchar();
-        if (rank == '2' || rank == '3' || rank == '4' || rank == '5' || rank == '6' || rank == '7' || rank == '8' || rank == '9' || rank == 't' || rank == 'q' || rank == 'k' || rank == 'a')
-            hand[num_read][0] = rank;
-        else bad_card =  true;
-        suit = getchar();
-        if (suit == 'c' || suit == 'd' || suit == 'h' || suit == 's')
-            hand[num_read][1] = suit;
-        else bad_card = true;
+void read_cards(){
+    int cards_read = 0;
+    char ch, rank_ch, suit_ch; 
+    int rank, suit;
+    bool bad_card;
+    bool duplicate_card;
 
-        while((ch = getchar()) != '\n'){
-            if(ch != ' ') bad_card =  true;
+    for (int i = 0; i < NUM_CARDS; i++){
+        hand[i][RANK] = 0;
+        hand[i][SUIT] = 0;
+    }
+
+    while (cards_read < NUM_CARDS) {
+        printf("Enter a card:");
+        bad_card = false;
+        rank_ch = getchar();
+        switch (rank_ch)
+        {
+        case '0': exit(EXIT_SUCCESS);
+        case '2': rank = 0; break;
+        case '3': rank = 1; break;
+        case '4': rank = 2; break;
+        case '5': rank = 3; break;
+        case '6': rank = 4; break;
+        case '7': rank = 5; break;
+        case '8': rank = 6; break;
+        case '9': rank = 7; break;
+        case 't': rank = 8; break;
+        case 'j': rank = 9; break;
+        case 'q': rank = 10; break;
+        case 'k': rank = 11; break;
+        case 'a': rank = 12; break;
+        default: bad_card = true;
         }
+        suit_ch = getchar();
+        switch (suit_ch)
+        {
+        case 'c': suit = 0; break;
+        case 'd': suit = 1; break;
+        case 'h': suit = 2; break;
+        case 's': suit = 3; break;
+        default: bad_card = true;
+        }
+        while((ch = getchar()) != '\n'){
+            if(ch != ' ') bad_card = true;
+        }
+        if (bad_card) {printf("Bad card. Ignored\n"); continue;}
+        
+        //check for duplicate
 
-        if (bad_card) printf("Bad card, ignored\n");
-        else num_read++;
+        for(int i = 0; i < cards_read; i++){
+            if (hand[i][RANK] == rank && hand[i][SUIT] == suit){
+                duplicate_card = true;
+                printf("Duplicate card. Ignored\n");
+            }
+        }
+        if(!duplicate_card){
+            hand[cards_read][RANK] = rank;
+            hand[cards_read][SUIT] = suit;
+            cards_read++;
+        }
     }
 }
 
-void analyze_hand(void){
-    //check for flush
-    flush = false;
-    for(int i = 0; i < NUM_CARDS; i++){
-        if(hand[i][1] == hand[i+1][1]){
-            if (i == 3) flush = true;
+void analyze_hand(){
+
+    int suit, rank, pass, cards, run;
+
+    //sort
+
+    for(pass = 1; pass < NUM_CARDS; pass++){
+        for(cards = 0; cards < NUM_CARDS - pass; cards++){
+            rank  = hand[cards][RANK];
+            suit = hand[cards][SUIT];
+            if(rank > hand[cards+1][RANK]){
+                hand[cards][RANK] = hand[cards+1][RANK];
+                hand[cards][SUIT] = hand[cards+1][SUIT];
+                hand[cards+1][RANK] = rank;
+                hand[cards+1][SUIT] =  suit; 
+            }
         }
-        else break;
     }
 
-    //check for straight
+    flush = true;
+    /* check for flush*/
+    suit = hand[0][SUIT];
+    for(cards = 1; cards < NUM_CARDS; cards++)
+    {
+        if(hand[cards][SUIT] != suit)
+            flush = false;
+    }
+    /* check for straight*/
+    for(cards = 0; cards < NUM_CARDS - 1; cards++){
+        if(hand[cards][RANK] != hand[cards+1][RANK])
+        straight = true;
+    }
+
+     /* check for 4-of-a-kind, 3-of-a-kind, and pairs by
+     looking for "runs" of cards with identical ranks */
+  cards = 0;
+  while (cards < NUM_CARDS) {
+    rank = hand[cards][RANK];
+    run = 0;
+    do {
+      run++;
+      cards++;
+    } while (cards < NUM_CARDS && hand[cards][RANK] == rank);
+    switch (run) {
+      case 2: pair++;      break;
+      case 3: three = true; break;
+      case 4: four = true;  break;
+    }
+  }
 }
 
 void print_result(void){
-    if(flush) printf("Flush\n");
+    if(straight && flush) printf("Straight & flush.");
+    else if (four) printf("Four of a kind");
+    else if (three && pair == 1) printf("Full house");
+    else if (flush) printf("Flush");
+    else if (three) printf("Three of a kind");
+    else if (pair == 2) printf("Twi pairs");
+    else if (pair ==  1) printf("Pair");
+    else printf("High card");
+
+    printf("\n\n");
 }
 
-int main(){
-    read_card();
-    for(int i = 0; i < NUM_CARDS; i++)
-            printf("%c %c\n", hand[i][0], hand[i][1]);
-    analyze_hand();
-    print_result();
-
+int main() {
+    for(;;){
+        read_cards();
+        analyze_hand();
+        print_result();
+    }
     return 0;
 }
