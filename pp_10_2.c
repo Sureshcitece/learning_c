@@ -12,8 +12,9 @@ int pair = 0;
 void read_cards(int num_in_rank[], int num_in_suit[]){
     bool cards[NUM_RANKS][NUM_SUITS];
     int cards_read = 0;
-    char ch;
-    int rank; int suit;
+    char ch, rank_ch, suit_ch; 
+    int rank, suit;
+    bool bad_card;
 
     for (int rank = 0; rank < NUM_RANKS; rank++){
         num_in_rank[rank] = 0;
@@ -23,13 +24,13 @@ void read_cards(int num_in_rank[], int num_in_suit[]){
         }
     }
 
-
     while (cards_read < NUM_CARDS) {
         printf("Enter a card:");
-        bool bad_card;
-        ch = getchar();
-        switch (ch)
+        bad_card = false;
+        rank_ch = getchar();
+        switch (rank_ch)
         {
+        case '0': exit(EXIT_SUCCESS);
         case '2': rank = 0; break;
         case '3': rank = 1; break;
         case '4': rank = 2; break;
@@ -45,8 +46,8 @@ void read_cards(int num_in_rank[], int num_in_suit[]){
         case 'a': rank = 12; break;
         default: bad_card = true;
         }
-        ch = getchar();
-                switch (ch)
+        suit_ch = getchar();
+        switch (suit_ch)
         {
         case 'c': suit = 0; break;
         case 'd': suit = 1; break;
@@ -54,14 +55,17 @@ void read_cards(int num_in_rank[], int num_in_suit[]){
         case 's': suit = 3; break;
         default: bad_card = true;
         }
-        if((ch = getchar()) == '\n'){
-            cards[rank][suit] = true;
+        while((ch = getchar()) != '\n'){
+            if(ch != ' ') bad_card = true;
+        }
+        if (bad_card) printf("Bad card. Ignored\n");
+        else if (cards[rank][suit]) printf("Duplicate card. Ignored\n");
+        else {
             num_in_rank[rank]++;
             num_in_suit[suit]++;
+            cards[rank][suit] = true;
             cards_read++;
         }
-        else if (bad_card) printf("Bad card. Ignored");
-        else if (cards[rank][suit]) printf("Bad card. Ignored");
     }
 }
 
@@ -76,11 +80,12 @@ void analyze_hand(int num_in_rank[], int num_in_suit[]){
     int rank = 0;
     int consec = 0;
     while(num_in_rank[rank] == 0) rank++;
-    for(; rank < NUM_RANKS && num_in_rank[rank] > 0; rank++)
+    for(; rank < NUM_RANKS && num_in_rank[rank] > 0; rank++){
         consec++;
-    if(consec == NUM_RANKS) {straight = true; return;};
+    }
+    if(consec == NUM_CARDS) {straight = true; return;}
 
-    for(int rank = 0; rank < NUM_RANKS; rank++){
+    for(rank = 0; rank < NUM_RANKS; rank++){
         if(num_in_rank[rank] == 4) four = true;
         if(num_in_rank[rank] == 3) three = true;
         if(num_in_rank[rank] == 2) pair++;
@@ -96,6 +101,8 @@ void print_result(void){
     else if (pair == 2) printf("Twi pairs");
     else if (pair ==  1) printf("Pair");
     else printf("High card");
+
+    printf("\n\n");
 }
 
 int main() {
