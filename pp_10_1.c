@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #define STACK_SIZE 100
 
@@ -7,6 +8,7 @@ int top = 0;
 
 void stack_overflow(){
     printf("Stack overflow\n");
+    exit(EXIT_FAILURE);
 }
 
 void make_empty(){
@@ -23,7 +25,7 @@ bool is_full(){
 
 void push(char c){
     if(is_full()){
-        return stack_overflow();
+        stack_overflow();
     }
     else{
         contents[top++] = c;
@@ -32,7 +34,7 @@ void push(char c){
 
 int pop(){
     if(is_empty()){
-        return stack_underflow();
+        stack_overflow();
     }
     else{
         return contents[--top];
@@ -41,14 +43,17 @@ int pop(){
 
 int main(){
     printf("Enter parantheses and / braces:");
-    while(true){
-        char c = getchar();
-        if(c == '(' || c == '{'){
-            push(c);
-        }
-        else if (c == ')' || c == '}'){
-            pop();
-        }
+    char ch;
+    while((ch = getchar()) != '\n'){
+        if(ch == '(' || ch == '{')  push(ch);
+        else if(ch == ')' || ch == '}') pop();
+    }
+
+    if(is_empty()){
+        printf("Parantheses and / braces are nested properly\n");
+    }
+    else{
+        printf("Parantheses and / braces are not nested properly\n");
     }
  
     return 0;   
