@@ -94,9 +94,9 @@ void analyze_hand(int num_in_rank[], int num_in_suit[]){
 
     /*check for ace low straight (a, 2, 3, 4, 5)*/
        /* check for straight*/
-    ace_low_straight = true;
-    for (rank = 0; rank < 4; rank++){
-        if(!num_in_rank[rank] && num_in_rank[12]) ace_low_straight = false;
+    if(consec == NUM_CARDS-1 && num_in_rank[0] && num_in_rank[NUM_RANKS-1]) { 
+        ace_low_straight = false; 
+        return;
     }
  
     for(rank = 0; rank < NUM_RANKS; rank++){
